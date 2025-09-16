@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Social_Media_API.Data;
 using Social_Media_API.Model;
+using Social_Media_API.Reposatory;
 
 namespace Social_Media_API
 {
@@ -24,6 +25,8 @@ namespace Social_Media_API
             });
             builder.Services.AddIdentity<User, IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>();
+            builder.Services.AddScoped<IGenaricRepo<Post>, GenaricRepo<Post>>();
+            builder.Services.AddScoped<IPostRepo, PostRepo>();
 
             var app = builder.Build();
 
