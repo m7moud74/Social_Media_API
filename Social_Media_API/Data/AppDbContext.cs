@@ -16,12 +16,8 @@ namespace Social_Media_API.Data
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Like> Likes { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            base.OnConfiguring(optionsBuilder);
-      
 
-        }
+       
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -56,8 +52,19 @@ namespace Social_Media_API.Data
                 .WithMany(u => u.FriendRequestsReceived) 
                 .HasForeignKey(f => f.ReceiverId)
                 .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Like>()
+    .HasOne(l => l.User)
+    .WithMany(u => u.Likes)
+    .HasForeignKey(l => l.UserId)
+    .OnDelete(DeleteBehavior.Cascade);
 
-          
+            builder.Entity<Like>()
+                .HasOne(l => l.Post)
+                .WithMany(p => p.Likes)
+                .HasForeignKey(l => l.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
             builder.Entity<Post>()
                 .HasIndex(p => p.CreatedAt);
 
