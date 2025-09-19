@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Social_Media_API.Dto;
@@ -22,6 +23,7 @@ namespace Social_Media_API.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public IActionResult GetAllPosts()
         {
             var postscontnet= postRepo.GetWithIncludes();
@@ -72,6 +74,7 @@ namespace Social_Media_API.Controllers
             return Ok(posts);
         }
         [HttpPost]
+        [Authorize]
         public IActionResult CreatePost([FromBody] CreatePostDto postDto)
         {
             if (postDto == null)
@@ -111,6 +114,7 @@ namespace Social_Media_API.Controllers
             return CreatedAtAction(nameof(GetAllPosts), new { id = post.PostId }, postReadDto);
         }
         [HttpPut("{id}")]
+        [Authorize]
 
         public IActionResult Update (int id,Post post)
         {
@@ -122,6 +126,8 @@ namespace Social_Media_API.Controllers
             return Ok();
         }
         [HttpDelete("{id}")]
+        [Authorize]
+
         public IActionResult Delete(int id)
         {
             var existingPost = genaricRepo.GetById(id);
