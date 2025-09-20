@@ -8,7 +8,7 @@ using Social_Media_API.Data;
 using Social_Media_API.Model;
 using Social_Media_API.Reposatory;
 using Social_Media_API.Service;
-
+using System.Security.Claims;
 using System.Text;
 
 namespace Social_Media_API
@@ -75,6 +75,12 @@ namespace Social_Media_API
             builder.Services.AddScoped<IGenaricRepo<Post>, GenaricRepo<Post>>();
             builder.Services.AddScoped<IPostRepo, PostRepo>();
             builder.Services.AddScoped<IGenaricRepo<Comment>, GenaricRepo<Comment>>();
+
+            builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
+            builder.Services.AddSignalR();
+           
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", policy =>
@@ -103,6 +109,7 @@ namespace Social_Media_API
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
             })
 .AddJwtBearer(options =>
 {
@@ -113,21 +120,39 @@ ValidateAudience = true,
 ValidateIssuerSigningKey = true,
 ValidIssuer = builder.Configuration["JWT:issuer"],
 ValidAudience = builder.Configuration["JWT:audience"],
-IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:secretKey"]))
+IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:secretKey"])),
+
+  
 };
+options.Events = new JwtBearerEvents
+{
+    OnMessageReceived = context =>
+    {
+        // «·”„«Õ »ﬁ—«¡… access_token „‰ query string ⁄‰œ « ’«· SignalR
+        var accessToken = context.Request.Query["access_token"];
+        var path = context.HttpContext.Request.Path;
+        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
+        {
+            context.Token = accessToken;
+        }
+        return Task.CompletedTask;
+    }
+};
+
 });
+           
             builder.Services.AddScoped<JwtTokenService>();
             builder.Services.AddAuthorization();
 
             var app = builder.Build();
-
+            app.MapHub<NotificationHub>("/notificationHub");
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            app.UseAuthentication();
             app.UseAuthorization();
             app.UseStaticFiles();
 

@@ -16,8 +16,8 @@ namespace Social_Media_API.Data
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Like> Likes { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
-       
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -56,7 +56,7 @@ namespace Social_Media_API.Data
     .HasOne(l => l.User)
     .WithMany(u => u.Likes)
     .HasForeignKey(l => l.UserId)
-    .OnDelete(DeleteBehavior.Cascade);
+    .OnDelete(DeleteBehavior.NoAction);
 
             builder.Entity<Like>()
                 .HasOne(l => l.Post)

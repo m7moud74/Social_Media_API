@@ -1,110 +1,150 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Social_Media_API.Dto;
 using Social_Media_API.Model;
 using Social_Media_API.Reposatory;
+using Social_Media_API.Service;
 using System.Security.Claims;
 
 namespace Social_Media_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PostController : ControllerBase
     {
-        private readonly IGenaricRepo<Post> genaricRepo;
+        private readonly IGenaricRepo<Post> _genaricRepo;
+        private readonly IPostRepo _postRepo;
+        private readonly INotificationService _notificationService;
 
-        private readonly IPostRepo postRepo; 
-
-        public PostController(IPostRepo postRepo,IGenaricRepo<Post> genaricRepo)
+        public PostController(
+            IPostRepo postRepo,
+            IGenaricRepo<Post> genaricRepo,
+            INotificationService notificationService)
         {
-            this.postRepo = postRepo;
-            this.genaricRepo = genaricRepo;
+            _postRepo = postRepo;
+            _genaricRepo = genaricRepo;
+            _notificationService = notificationService;
         }
 
         [HttpGet]
-        [Authorize]
         public IActionResult GetAllPosts()
         {
-            var postscontnet= postRepo.GetWithIncludes();
-            List<PostDto> posts = new List<PostDto>();
-            foreach (var post in postscontnet)
+            var postsContent = _postRepo.GetWithIncludes();
+            var posts = postsContent.Select(post => new PostDto
             {
-                
-                PostDto postDto = new PostDto
+                PostId = post.PostId,
+                Content = post.Content,
+                CreatedAt = post.CreatedAt,
+                ImageUrl = post.ImageUrl,
+                PostUserDto = new UserDto
                 {
-                    PostId = post.PostId,
-                    Content = post.Content,
-                    CreatedAt = post.CreatedAt,
-                    ImageUrl = post.ImageUrl,
-                    PostUserDto = new UserDto
+                    UserId = post.User.Id,
+                    UserName = post.User.UserName
+                },
+                Comments = post.Comments.Select(c => new CommentDto
+                {
+                    CommentId = c.CommentId,
+                    Content = c.Content,
+                    CreatedAt = c.CreatedAt,
+                    CommentUserDto = new UserDto
                     {
-                        UserId = post.User.Id,
-                        UserName = post.User.UserName,
-                       
-                    },
-                    Comments = post.Comments.Select(c => new CommentDto
+                        UserId = c.User.Id,
+                        UserName = c.User.UserName
+                    }
+                }).ToList(),
+                Likes = post.Likes.Select(l => new LikeDto
+                {
+                    LikeId = l.LikeId,
+                    PostId = l.PostId,
+                    LikeUserDto = new UserDto
                     {
-                        CommentId = c.CommentId,
-                        Content = c.Content,
-                        CreatedAt = c.CreatedAt,
-                        CommentUserDto = new UserDto
-                        {
-                            UserId = c.User.Id,
-                            UserName = c.User.UserName,
-                           
-                        }
-                    }).ToList(),
-                    Likes = post.Likes.Select(l => new LikeDto
-                    {
-                        LikeId = l.LikeId,
-                        
-                        PostId = l.PostId,
-                        LikeUserDto = new UserDto
-                        {
-                            UserId = l.User.Id,
-                            UserName = l.User.UserName,
-                          
-                        }
-                    }).ToList()
-                };
-                posts.Add(postDto);
-            }
-            
+                        UserId = l.User.Id,
+                        UserName = l.User.UserName
+                    }
+                }).ToList()
+            }).ToList();
+
             return Ok(posts);
         }
+
         [HttpPost]
-        [Authorize]
-        public IActionResult CreatePost([FromBody] CreatePostDto postDto)
+        public async Task<IActionResult> CreatePost([FromBody] CreatePostDto postDto)
         {
             if (postDto == null)
-            {
-                return BadRequest("Can't Publich Empty Post");
-            }
+                return BadRequest("Can't publish empty post.");
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userName = User.Identity?.Name;
             var profilePicture = User.FindFirst("profilePicture")?.Value;
 
-            if (userId == null)
-            {
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userName = User.Identity?.Name;
+
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+            if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
-            }
 
             var post = new Post
             {
                 Content = postDto.Content,
                 ImageUrl = postDto.ImageUrl,
                 CreatedAt = DateTime.Now,
-                UserId = userId,
-               
-
+                UserId = userId
             };
 
-            genaricRepo.Create(post);
-           
-            genaricRepo.Save();
-            Console.WriteLine(post.PostId);
+            _genaricRepo.Create(post);
+            _genaricRepo.Save();
+
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+            await _notificationService.NotifyAsync(
+                userId,
+                "PostCreated",
+                $"Hi {userName}, your post was created successfully."
+            );
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+            var notification = new Notification
+            {
+                UserId = userId,
+                Type = "PostCreated",
+                Message = $"Hi {userName}, your post was created successfully.",
+                CreatedAt = DateTime.Now,
+                IsRead = false
+            };
+
+            await _notificationService.NotifyAsync(
+    userId,
+    "PostCreated",
+    $"Hi {userName}, your post was created successfully."
+);
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
             var postReadDto = new PostReadDto
             {
@@ -125,31 +165,82 @@ namespace Social_Media_API.Controllers
 
             return CreatedAtAction(nameof(GetAllPosts), new { id = post.PostId }, postReadDto);
         }
-        [HttpPut("{id}")]
-        [Authorize]
 
-        public IActionResult Update (int id,CreatePostDto post)
+        [HttpPut("{id}")]
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        public IActionResult Update(int id, [FromBody] CreatePostDto post)
         {
-            var existingPost = genaricRepo.GetById(id);
-            if (post == null||existingPost==null)
+            var existingPost = _genaricRepo.GetById(id);
+            if (post == null || existingPost == null)
                 return BadRequest("Post is null.");
+
             existingPost.Content = post.Content;
             existingPost.ImageUrl = post.ImageUrl;
-            genaricRepo.Update(id, existingPost);
-            genaricRepo.Save();
 
-            return Ok();
+            _genaricRepo.Update(id, existingPost);
+            _genaricRepo.Save();
+
+            return Ok("Post updated successfully.");
         }
-        [HttpDelete("{id}")]
-        [Authorize]
 
+        [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var existingPost = genaricRepo.GetById(id);
+            var existingPost = _genaricRepo.GetById(id);
             if (existingPost == null)
                 return NotFound("Post not found.");
-            genaricRepo.Delete(id);
-            genaricRepo.Save();
+
+=======
+        public IActionResult Update(int id, [FromBody] Post post)
+        {
+            var existingPost = _genaricRepo.GetById(id);
+            if (existingPost == null)
+                return NotFound("Post not found.");
+
+=======
+        public IActionResult Update(int id, [FromBody] Post post)
+        {
+            var existingPost = _genaricRepo.GetById(id);
+            if (existingPost == null)
+                return NotFound("Post not found.");
+
+>>>>>>> Stashed changes
+=======
+        public IActionResult Update(int id, [FromBody] Post post)
+        {
+            var existingPost = _genaricRepo.GetById(id);
+            if (existingPost == null)
+                return NotFound("Post not found.");
+
+>>>>>>> Stashed changes
+            existingPost.Content = post.Content ?? existingPost.Content;
+            existingPost.ImageUrl = post.ImageUrl ?? existingPost.ImageUrl;
+
+            _genaricRepo.Update(id, existingPost);
+            _genaricRepo.Save();
+
+            return Ok("Post updated successfully.");
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var existingPost = _genaricRepo.GetById(id);
+            if (existingPost == null)
+                return NotFound("Post not found.");
+
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+            _genaricRepo.Delete(id);
+            _genaricRepo.Save();
+
             return NoContent();
         }
     }
