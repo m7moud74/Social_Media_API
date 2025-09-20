@@ -73,30 +73,11 @@ namespace Social_Media_API.Controllers
         {
             if (postDto == null)
                 return BadRequest("Can't publish empty post.");
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userName = User.Identity?.Name;
             var profilePicture = User.FindFirst("profilePicture")?.Value;
 
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var userName = User.Identity?.Name;
-
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
@@ -111,40 +92,11 @@ namespace Social_Media_API.Controllers
             _genaricRepo.Create(post);
             _genaricRepo.Save();
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
             await _notificationService.NotifyAsync(
                 userId,
                 "PostCreated",
                 $"Hi {userName}, your post was created successfully."
             );
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-            var notification = new Notification
-            {
-                UserId = userId,
-                Type = "PostCreated",
-                Message = $"Hi {userName}, your post was created successfully.",
-                CreatedAt = DateTime.Now,
-                IsRead = false
-            };
-
-            await _notificationService.NotifyAsync(
-    userId,
-    "PostCreated",
-    $"Hi {userName}, your post was created successfully."
-);
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
             var postReadDto = new PostReadDto
             {
@@ -163,13 +115,10 @@ namespace Social_Media_API.Controllers
                 CommentCount = 0
             };
 
-            return CreatedAtAction(nameof(GetAllPosts), new { id = post.PostId }, postReadDto);
+            return CreatedAtAction(nameof(GetAllPosts), postReadDto);
         }
 
         [HttpPut("{id}")]
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
         public IActionResult Update(int id, [FromBody] CreatePostDto post)
         {
             var existingPost = _genaricRepo.GetById(id);
@@ -192,52 +141,6 @@ namespace Social_Media_API.Controllers
             if (existingPost == null)
                 return NotFound("Post not found.");
 
-=======
-        public IActionResult Update(int id, [FromBody] Post post)
-        {
-            var existingPost = _genaricRepo.GetById(id);
-            if (existingPost == null)
-                return NotFound("Post not found.");
-
-=======
-        public IActionResult Update(int id, [FromBody] Post post)
-        {
-            var existingPost = _genaricRepo.GetById(id);
-            if (existingPost == null)
-                return NotFound("Post not found.");
-
->>>>>>> Stashed changes
-=======
-        public IActionResult Update(int id, [FromBody] Post post)
-        {
-            var existingPost = _genaricRepo.GetById(id);
-            if (existingPost == null)
-                return NotFound("Post not found.");
-
->>>>>>> Stashed changes
-            existingPost.Content = post.Content ?? existingPost.Content;
-            existingPost.ImageUrl = post.ImageUrl ?? existingPost.ImageUrl;
-
-            _genaricRepo.Update(id, existingPost);
-            _genaricRepo.Save();
-
-            return Ok("Post updated successfully.");
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            var existingPost = _genaricRepo.GetById(id);
-            if (existingPost == null)
-                return NotFound("Post not found.");
-
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
             _genaricRepo.Delete(id);
             _genaricRepo.Save();
 

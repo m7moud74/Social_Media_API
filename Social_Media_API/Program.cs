@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,14 +19,12 @@ namespace Social_Media_API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
 
             builder.Services.AddSwaggerGen(swagger =>
             {
-                //This?is?to?generate?the?Default?UI?of?Swagger?Documentation????
                 swagger.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
@@ -41,7 +38,8 @@ namespace Social_Media_API
                         Url = new Uri("https://github.com/Hoda512?tab=repositories")
                     }
                 });
-                //?To?Enable?authorization?using?Swagger?(JWT)????
+
+                // Enable JWT authorization in Swagger
                 swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
                     Name = "Authorization",
@@ -49,37 +47,36 @@ namespace Social_Media_API
                     Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Description = "Enter?'Bearer'?[space]?and?then?your?valid?token?in?the?text?input?below.\r\n\r\nExample:?\"Bearer?eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\"",
+                    Description = "Enter 'Bearer' [space] and then your valid token below.\r\n\r\nExample: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\"",
                 });
                 swagger.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
-                    new OpenApiSecurityScheme
-                    {
-                    Reference = new OpenApiReference
-                    {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
                     }
-                    },
-                    new string[] {}
-                    }
-                    });
-               
+                });
             });
+
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("cs"));
             });
-         
-            builder.Services.AddScoped<IGenaricRepo<Post>, GenaricRepo<Post>>();
+
+            builder.Services.AddScoped(typeof(IGenaricRepo<>), typeof(GenaricRepo<>));
             builder.Services.AddScoped<IPostRepo, PostRepo>();
             builder.Services.AddScoped<IGenaricRepo<Comment>, GenaricRepo<Comment>>();
 
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddSignalR();
-           
 
             builder.Services.AddCors(options =>
             {
@@ -90,9 +87,8 @@ namespace Social_Media_API
                           .AllowAnyHeader();
                 });
             });
+
             builder.Services.AddIdentity<User, IdentityRole>(op =>
-
-
             {
                 op.Password.RequireDigit = false;
                 op.Password.RequireLowercase = false;
@@ -101,57 +97,55 @@ namespace Social_Media_API
                 op.Password.RequiredLength = 3;
                 op.User.RequireUniqueEmail = true;
                 op.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ ";
-            }
-
-            ).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
+            })
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
 
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
             })
-.AddJwtBearer(options =>
-{
-options.TokenValidationParameters = new TokenValidationParameters
-{
-ValidateIssuer = true,
-ValidateAudience = true,
-ValidateIssuerSigningKey = true,
-ValidIssuer = builder.Configuration["JWT:issuer"],
-ValidAudience = builder.Configuration["JWT:audience"],
-IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:secretKey"])),
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["JWT:issuer"],
+                    ValidAudience = builder.Configuration["JWT:audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:secretKey"]))
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        // ÿßŸÑÿ≥ŸÖÿßÿ≠ ÿ®ÿ™ŸÖÿ±Ÿäÿ± ÿßŸÑŸÄ access_token ŸÖŸÜ query string ŸÑŸÄ SignalR
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
+            });
 
-  
-};
-options.Events = new JwtBearerEvents
-{
-    OnMessageReceived = context =>
-    {
-        // «·”„«Õ »ﬁ—«¡… access_token „‰ query string ⁄‰œ « ’«· SignalR
-        var accessToken = context.Request.Query["access_token"];
-        var path = context.HttpContext.Request.Path;
-        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
-        {
-            context.Token = accessToken;
-        }
-        return Task.CompletedTask;
-    }
-};
-
-});
-           
             builder.Services.AddScoped<JwtTokenService>();
             builder.Services.AddAuthorization();
 
             var app = builder.Build();
             app.MapHub<NotificationHub>("/notificationHub");
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseStaticFiles();
