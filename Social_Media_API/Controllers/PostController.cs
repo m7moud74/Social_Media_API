@@ -123,7 +123,7 @@ namespace Social_Media_API.Controllers
                 CommentCount = 0
             };
 
-            return CreatedAtAction(nameof(GetAllPosts), new { id = post.PostId }, postReadDto);
+            return CreatedAtAction(nameof(GetAllPosts), postReadDto);
         }
         [HttpPut("{id}")]
         [Authorize]
@@ -145,9 +145,12 @@ namespace Social_Media_API.Controllers
 
         public IActionResult Delete(int id)
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return Unauthorized();
             var existingPost = genaricRepo.GetById(id);
             if (existingPost == null)
-                return NotFound("Post not found.");
+                return NotFound("you can delete your own post only .");
             genaricRepo.Delete(id);
             genaricRepo.Save();
             return NoContent();

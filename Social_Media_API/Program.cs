@@ -71,10 +71,15 @@ namespace Social_Media_API
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("cs"));
             });
-         
-            builder.Services.AddScoped<IGenaricRepo<Post>, GenaricRepo<Post>>();
+            builder.Services.AddScoped(typeof(IGenaricRepo<>), typeof(GenaricRepo<>));
             builder.Services.AddScoped<IPostRepo, PostRepo>();
-            builder.Services.AddScoped<IGenaricRepo<Comment>, GenaricRepo<Comment>>();
+            builder.Services.AddScoped<ILikeRepo, LikeRepo>();
+            //builder.Services.AddScoped<IGenaricRepo<Post>, GenaricRepo<Post>>();
+            //builder.Services.AddScoped<IPostRepo, PostRepo>();
+            //builder.Services.AddScoped<IGenaricRepo<Comment>, GenaricRepo<Comment>>();
+            //builder.Services.AddScoped<IGenaricRepo<Like>, GenaricRepo<Like>>();
+           
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", policy =>
