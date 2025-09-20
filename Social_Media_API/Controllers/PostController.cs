@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Social_Media_API.Dto;
 using Social_Media_API.Model;
 using Social_Media_API.Reposatory;
+using System.Security.Claims;
 
 namespace Social_Media_API.Controllers
 {
@@ -81,8 +82,9 @@ namespace Social_Media_API.Controllers
             {
                 return BadRequest("Can't Publich Empty Post");
             }
-            var userId = User.FindFirst("sub")?.Value; 
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userName = User.Identity?.Name;
+            var profilePicture = User.FindFirst("profilePicture")?.Value;
 
             if (userId == null)
             {
@@ -94,11 +96,15 @@ namespace Social_Media_API.Controllers
                 Content = postDto.Content,
                 ImageUrl = postDto.ImageUrl,
                 CreatedAt = DateTime.Now,
-                UserId = userId
+                UserId = userId,
+               
+
             };
 
             genaricRepo.Create(post);
+           
             genaricRepo.Save();
+            Console.WriteLine(post.PostId);
 
             var postReadDto = new PostReadDto
             {
@@ -107,6 +113,12 @@ namespace Social_Media_API.Controllers
                 ImageUrl = post.ImageUrl,
                 CreatedAt = post.CreatedAt,
                 AuthorName = userName,
+                AuthorPic = profilePicture,
+                PostUserDto = new UserDto
+                {
+                    UserId = userId,
+                    UserName = userName
+                },
                 LikeCount = 0,
                 CommentCount = 0
             };
@@ -116,12 +128,15 @@ namespace Social_Media_API.Controllers
         [HttpPut("{id}")]
         [Authorize]
 
-        public IActionResult Update (int id,Post post)
+        public IActionResult Update (int id,CreatePostDto post)
         {
             var existingPost = genaricRepo.GetById(id);
             if (post == null||existingPost==null)
                 return BadRequest("Post is null.");
-            genaricRepo.Update(id, post);
+            existingPost.Content = post.Content;
+            existingPost.ImageUrl = post.ImageUrl;
+            genaricRepo.Update(id, existingPost);
+            genaricRepo.Save();
 
             return Ok();
         }

@@ -7,6 +7,7 @@
         public string ImageUrl { get; set; }
         public DateTime CreatedAt { get; set; }
         public string AuthorName { get; set; }
+        public string AuthorPic { get; set; }
         public int LikeCount { get; set; }
         public int CommentCount { get; set; }
         public UserDto PostUserDto { get; set; } = new UserDto();
