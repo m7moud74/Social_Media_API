@@ -4,6 +4,7 @@
     {
         public int LikeId {  get; set; }
         public int PostId {  get; set; }
+        public DateTime CrateAt { get; set; }
 
     }
 }

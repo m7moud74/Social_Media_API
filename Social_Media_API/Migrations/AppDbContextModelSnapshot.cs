@@ -228,7 +228,13 @@ namespace Social_Media_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LikeId"));
 
+                    b.Property<DateTime>("CreatAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Raction")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
