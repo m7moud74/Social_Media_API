@@ -12,6 +12,7 @@
         public int CommentCount { get; set; }
         public UserDto PostUserDto { get; set; } = new UserDto();
         public int PostId { get; set; }
+
        
     }
 }
