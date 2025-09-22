@@ -2,8 +2,7 @@
 {
     public class LikeDto
     {
-        public int LikeId { get; set; }
-       
+        public DateTime CreateAt { get; set; }
         public int PostId { get; set; }
         public UserDto LikeUserDto { get; set; }=new UserDto();
 

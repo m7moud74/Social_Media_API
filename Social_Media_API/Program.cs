@@ -70,6 +70,8 @@ namespace Social_Media_API
 
             builder.Services.AddScoped(typeof(IGenaricRepo<>), typeof(GenaricRepo<>));
             builder.Services.AddScoped<IPostRepo, PostRepo>();
+            builder.Services.AddScoped<ILikeRepo, LikeRepo>();
+            builder.Services.AddScoped<ICommentRepo, CommentRepo>();
             builder.Services.AddScoped<IGenaricRepo<Comment>, GenaricRepo<Comment>>();
             builder.Services.AddScoped<ILikeRepo, LikeRepo>();
 

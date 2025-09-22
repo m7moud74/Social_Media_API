@@ -17,12 +17,14 @@ namespace Social_Media_API.Controllers
         private readonly IGenaricRepo<Like> genaricRepo;
         private readonly ILikeRepo likeRepo;
         private readonly IPostRepo postRepo;
+        private readonly IGenaricRepo<Post> genaricPostRepo;
 
-        public LikeController(IGenaricRepo<Like> genaricRepo, ILikeRepo likeRepo, IPostRepo postRepo)
+        public LikeController(IGenaricRepo<Like> genaricRepo, ILikeRepo likeRepo, IPostRepo postRepo, IGenaricRepo<Post> genaricPostRepo)
         {
             this.genaricRepo = genaricRepo;
             this.likeRepo = likeRepo;
             this.postRepo = postRepo;
+            this.genaricPostRepo = genaricPostRepo;
         }
         [HttpGet]
         public IActionResult GetAllLikes()
@@ -31,8 +33,8 @@ namespace Social_Media_API.Controllers
 
             var likes = allLikes.Select(like => new LikeDto
             {
-                LikeId = like.LikeId,
                 PostId = like.PostId,
+                CreateAt=like.CreatAt,
                 LikeUserDto = new UserDto
                 {
                     UserId = like.UserId,
@@ -49,7 +51,7 @@ namespace Social_Media_API.Controllers
         [HttpPost]
         public IActionResult AddLike(CreateLikeDto likeDto)
         {
-            var post = genaricRepo.GetById(likeDto.PostId);
+            var post = genaricPostRepo.GetById(likeDto.PostId);
             if (post == null)
                 return NotFound("Post not found");
             if (likeDto == null) return BadRequest();
@@ -63,15 +65,16 @@ namespace Social_Media_API.Controllers
             var like = new Like
             {
                 PostId = likeDto.PostId,
-                UserId = userId
+                UserId = userId,
+                CreatAt=DateTime.Now,
             };
 
             genaricRepo.Create(like);
             genaricRepo.Save();
             var result = new LikeDto
             {
-                LikeId = like.LikeId,
                 PostId = like.PostId,
+                CreateAt=like.CreatAt,
                 LikeUserDto = new UserDto
                 {
                     UserId = userId,

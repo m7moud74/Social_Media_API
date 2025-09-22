@@ -45,6 +45,7 @@ namespace Social_Media_API.Controllers
                 Comments = post.Comments.Select(c => new CommentDto
                 {
                     CommentId = c.CommentId,
+                    PostId=c.PostId,
                     Content = c.Content,
                     CreatedAt = c.CreatedAt,
                     CommentUserDto = new UserDto
@@ -55,12 +56,14 @@ namespace Social_Media_API.Controllers
                 }).ToList(),
                 Likes = post.Likes.Select(l => new LikeDto
                 {
-                    LikeId = l.LikeId,
                     PostId = l.PostId,
+                    CreateAt=l.CreatAt,
                     LikeUserDto = new UserDto
                     {
                         UserId = l.User.Id,
-                        UserName = l.User.UserName
+                        UserName = l.User.UserName,
+                        ProfilePictureUrl=l.User.ProfilePictureUrl
+
                     }
                 }).ToList()
             }).ToList();
@@ -83,6 +86,7 @@ namespace Social_Media_API.Controllers
 
             var post = new Post
             {
+               
                 Content = postDto.Content,
                 ImageUrl = postDto.ImageUrl,
                 CreatedAt = DateTime.Now,
@@ -100,7 +104,7 @@ namespace Social_Media_API.Controllers
 
             var postReadDto = new PostReadDto
             {
-                Id = post.PostId,
+                PostId = post.PostId,
                 Content = post.Content,
                 ImageUrl = post.ImageUrl,
                 CreatedAt = post.CreatedAt,
@@ -112,7 +116,8 @@ namespace Social_Media_API.Controllers
                     UserName = userName
                 },
                 LikeCount = 0,
-                CommentCount = 0
+                CommentCount = 0,
+               
             };
 
             return CreatedAtAction(nameof(GetAllPosts), postReadDto);
