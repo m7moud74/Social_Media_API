@@ -11,7 +11,8 @@
         public int LikeCount { get; set; }
         public int CommentCount { get; set; }
         public UserDto PostUserDto { get; set; } = new UserDto();
-     
+
+
        
     }
 }

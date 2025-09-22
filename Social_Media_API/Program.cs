@@ -7,7 +7,6 @@ using Social_Media_API.Data;
 using Social_Media_API.Model;
 using Social_Media_API.Reposatory;
 using Social_Media_API.Service;
-using System.Security.Claims;
 using System.Text;
 
 namespace Social_Media_API
@@ -20,7 +19,6 @@ namespace Social_Media_API
 
             // Add services to the container.
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
 
             builder.Services.AddSwaggerGen(swagger =>
@@ -76,6 +74,7 @@ namespace Social_Media_API
             builder.Services.AddScoped<ICommentRepo, CommentRepo>();
             builder.Services.AddScoped<IFriendshipRpo, FriendshipRpo>();
             builder.Services.AddScoped<IGenaricRepo<Comment>, GenaricRepo<Comment>>();
+            builder.Services.AddScoped<ILikeRepo, LikeRepo>();
 
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
@@ -124,7 +123,7 @@ namespace Social_Media_API
                 {
                     OnMessageReceived = context =>
                     {
-                        // Ø§Ù„Ø³Ù…Ø§Ø­ Ø¨ØªÙ…Ø±ÙŠØ± Ø§Ù„Ù€ access_token Ù…Ù† query string Ù„Ù€ SignalR
+                        // ÇáÓãÇÍ ÈÞÑÇÁÉ access_token ãä query string ÚäÏ ÇÊÕÇá SignalR
                         var accessToken = context.Request.Query["access_token"];
                         var path = context.HttpContext.Request.Path;
                         if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
