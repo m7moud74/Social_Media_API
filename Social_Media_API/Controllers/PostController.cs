@@ -13,7 +13,6 @@ namespace Social_Media_API.Controllers
   
     public class PostController : ControllerBase
     {
-        private readonly IGenaricRepo<Post> _genaricRepo;
         private readonly IPostRepo _postRepo;
         private readonly INotificationService _notificationService;
 
