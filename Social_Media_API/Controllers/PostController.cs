@@ -10,19 +10,14 @@ namespace Social_Media_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-  
     public class PostController : ControllerBase
     {
         private readonly IPostRepo _postRepo;
         private readonly INotificationService _notificationService;
 
-        public PostController(
-            IPostRepo postRepo,
-            IGenaricRepo<Post> genaricRepo,
-            INotificationService notificationService)
+        public PostController(IPostRepo postRepo, INotificationService notificationService)
         {
             _postRepo = postRepo;
-            _genaricRepo = genaricRepo;
             _notificationService = notificationService;
         }
 
@@ -39,30 +34,33 @@ namespace Social_Media_API.Controllers
                 PostUserDto = new UserDto
                 {
                     UserId = post.User.Id,
-                    UserName = post.User.UserName
+                    UserName = post.User.UserName,
+                    ProfilePictureUrl=post.User.ProfilePictureUrl
                 },
                 Comments = post.Comments.Select(c => new CommentDto
                 {
                     CommentId = c.CommentId,
-                    PostId=c.PostId,
+                    PostId = c.PostId,
                     Content = c.Content,
                     CreatedAt = c.CreatedAt,
                     CommentUserDto = new UserDto
                     {
                         UserId = c.User.Id,
-                        UserName = c.User.UserName
+                        UserName = c.User.UserName,
+                        ProfilePictureUrl=c.User.ProfilePictureUrl
+                        
                     }
                 }).ToList(),
                 Likes = post.Likes.Select(l => new LikeDto
                 {
                     PostId = l.PostId,
-                    CreateAt=l.CreatAt,
+                    CreateAt = l.CreatAt,
+                    Reaction=l.Reaction,
                     LikeUserDto = new UserDto
                     {
                         UserId = l.User.Id,
                         UserName = l.User.UserName,
-                        ProfilePictureUrl=l.User.ProfilePictureUrl
-
+                        ProfilePictureUrl = l.User.ProfilePictureUrl
                     }
                 }).ToList()
             }).ToList();
@@ -70,8 +68,8 @@ namespace Social_Media_API.Controllers
             return Ok(posts);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreatePost([FromBody] CreatePostDto postDto)
+        [HttpPost("create")]
+        public async Task<IActionResult> CreatePost([FromForm] CreatePostDto postDto)
         {
             if (postDto == null)
                 return BadRequest("Can't publish empty post.");
@@ -83,17 +81,34 @@ namespace Social_Media_API.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
+            string imageUrl = null;
+            if (postDto.ImageUrl != null && postDto.ImageUrl.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(postDto.ImageUrl.FileName);
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await postDto.ImageUrl.CopyToAsync(stream);
+                }
+
+                imageUrl = $"/images/{uniqueFileName}";
+            }
+
             var post = new Post
             {
-               
                 Content = postDto.Content,
-                ImageUrl = postDto.ImageUrl,
+                ImageUrl = imageUrl,
                 CreatedAt = DateTime.Now,
                 UserId = userId
             };
 
-            _genaricRepo.Create(post);
-            _genaricRepo.Save();
+            _postRepo.Create(post);
+            _postRepo.Save();
 
             await _notificationService.NotifyAsync(
                 userId,
@@ -115,25 +130,40 @@ namespace Social_Media_API.Controllers
                     UserName = userName
                 },
                 LikeCount = 0,
-                CommentCount = 0,
-               
+                CommentCount = 0
             };
 
             return CreatedAtAction(nameof(GetAllPosts), postReadDto);
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] CreatePostDto post)
+        public async Task<IActionResult> Update(int id, [FromForm] CreatePostDto postDto)
         {
-            var existingPost = _genaricRepo.GetById(id);
-            if (post == null || existingPost == null)
+            var existingPost = _postRepo.GetById(id);
+            if (postDto == null || existingPost == null)
                 return BadRequest("Post is null.");
 
-            existingPost.Content = post.Content;
-            existingPost.ImageUrl = post.ImageUrl;
+            existingPost.Content = postDto.Content;
 
-            _genaricRepo.Update(id, existingPost);
-            _genaricRepo.Save();
+            if (postDto.ImageUrl != null && postDto.ImageUrl.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(postDto.ImageUrl.FileName);
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await postDto.ImageUrl.CopyToAsync(stream);
+                }
+
+                existingPost.ImageUrl = $"/images/{uniqueFileName}";
+            }
+
+            _postRepo.Update(id, existingPost);
+            _postRepo.Save();
 
             return Ok("Post updated successfully.");
         }
@@ -141,12 +171,12 @@ namespace Social_Media_API.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var existingPost = _genaricRepo.GetById(id);
+            var existingPost = _postRepo.GetById(id);
             if (existingPost == null)
                 return NotFound("Post not found.");
 
-            _genaricRepo.Delete(id);
-            _genaricRepo.Save();
+            _postRepo.Delete(id);
+            _postRepo.Save();
 
             return NoContent();
         }

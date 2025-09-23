@@ -15,18 +15,16 @@ namespace Social_Media_API.Controllers
     [ApiController]
     public class LikeController : ControllerBase
     {
-        private readonly IGenaricRepo<Like> genaricRepo;
         private readonly ILikeRepo likeRepo;
         private readonly IPostRepo postRepo;
-        private readonly IGenaricRepo<Post> genaricPostRepo;
         private readonly INotificationService _notificationService;
 
-        public LikeController(IGenaricRepo<Like> genaricRepo, ILikeRepo likeRepo, IPostRepo postRepo, IGenaricRepo<Post> genaricPostRepo, INotificationService notificationService)
+        public LikeController( ILikeRepo likeRepo, IPostRepo postRepo, INotificationService notificationService)
         {
-            this.genaricRepo = genaricRepo;
+           
             this.likeRepo = likeRepo;
             this.postRepo = postRepo;
-            this.genaricPostRepo = genaricPostRepo;
+           
             _notificationService = notificationService;
         }
         [HttpGet]
@@ -38,6 +36,8 @@ namespace Social_Media_API.Controllers
             {
                 PostId = like.PostId,
                 CreateAt=like.CreatAt,
+                Reaction=like.Reaction,
+
                 LikeUserDto = new UserDto
                 {
                     UserId = like.UserId,
@@ -55,7 +55,7 @@ namespace Social_Media_API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddLike(CreateLikeDto likeDto)
         {
-            var post = genaricPostRepo.GetById(likeDto.PostId);
+            var post = postRepo.GetById(likeDto.PostId);
             if (post == null)
                 return NotFound("Post not found");
 
@@ -71,11 +71,12 @@ namespace Social_Media_API.Controllers
             {
                 PostId = likeDto.PostId,
                 UserId = userId,
+                Reaction=likeDto.Reaction,
                 CreatAt = DateTime.Now,
             };
 
-            genaricRepo.Create(like);
-            genaricRepo.Save();
+            likeRepo.Create(like);
+            likeRepo.Save();
 
            
             if (post.UserId != userId)
@@ -83,7 +84,7 @@ namespace Social_Media_API.Controllers
                 await _notificationService.NotifyAsync(
                     post.UserId,
                     "PostLiked",
-                    $"{userName} liked your post."
+                    $"{userName} liked your post with React{like.Reaction}."
                 );
             }
 
@@ -91,6 +92,7 @@ namespace Social_Media_API.Controllers
             {
                 PostId = like.PostId,
                 CreateAt = like.CreatAt,
+                Reaction=likeDto.Reaction,
                 LikeUserDto = new UserDto
                 {
                     UserId = userId,
@@ -109,15 +111,15 @@ namespace Social_Media_API.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            var like = genaricRepo.GetById(id);
+            var like = likeRepo.GetById(id);
             if (like == null)
                 return NotFound("Like not found");
 
             if (like.UserId != userId)
                 return Forbid("You can only delete your own like");
 
-            genaricRepo.Delete(id);
-            genaricRepo.Save();
+            likeRepo.Delete(id);
+            likeRepo.Save();
 
             return NoContent();
         }

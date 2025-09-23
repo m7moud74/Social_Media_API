@@ -2,21 +2,21 @@
 
 namespace Social_Media_API.Model
 {
-    public enum Raction
+    public enum Reaction
     {
-        Love,
-        Hahaha,
-        Care,
-        Angrey,
-        Sad,
-        Woooooow
+        Love=1,
+        Hahaha=2,
+        Care=3,
+        Angrey=4,
+        Sad=5,
+        Woooooow=6
     }
     public class Like
     {
         public int LikeId { get; set; }
         [ForeignKey("Post")]
         public DateTime CreatAt { get; set; }
-        public Raction Raction { get; set; }
+        public Reaction Reaction { get; set; }
         public int PostId { get; set; }
         [ForeignKey("User")]
       

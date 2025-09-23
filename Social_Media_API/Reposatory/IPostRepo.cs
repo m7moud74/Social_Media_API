@@ -2,7 +2,7 @@
 
 namespace Social_Media_API.Reposatory
 {
-    public interface IPostRepo
+    public interface IPostRepo:IGenaricRepo<Post>
     {
         public IEnumerable<Post> GetWithIncludes();
     }

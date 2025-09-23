@@ -2,7 +2,7 @@
 
 namespace Social_Media_API.Reposatory
 {
-    public interface ICommentRepo
+    public interface ICommentRepo:IGenaricRepo<Comment>
     {
         public IEnumerable<Comment> GetWithInclude();
         

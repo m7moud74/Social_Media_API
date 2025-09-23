@@ -259,7 +259,7 @@ namespace Social_Media_API.Migrations
                     LikeId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CreatAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Raction = table.Column<int>(type: "int", nullable: false),
+                    Reaction = table.Column<int>(type: "int", nullable: false),
                     PostId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },

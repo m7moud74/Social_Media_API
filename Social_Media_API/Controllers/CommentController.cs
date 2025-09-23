@@ -14,15 +14,15 @@ namespace Social_Media_API.Controllers
     {
         private readonly ICommentRepo commentRepo;
         private readonly IGenaricRepo<Post> genaricPostRepo;
-        private readonly IGenaricRepo<Comment> genaricCommentRepo;
+       
         private readonly INotificationService _notificationService;
+        private readonly IPostRepo postRepo;
 
-        public CommentController(ICommentRepo commentRepo, IGenaricRepo<Post> genaricPostRepo, IGenaricRepo<Comment> genaricCommentRepo, INotificationService notificationService)
+        public CommentController(ICommentRepo commentRepo, INotificationService notificationService,IPostRepo postRepo)
         {
-            this.commentRepo = commentRepo;
-            this.genaricPostRepo = genaricPostRepo;
-            this.genaricCommentRepo = genaricCommentRepo;
+            this.commentRepo = commentRepo;           
             _notificationService = notificationService;
+            this.postRepo = postRepo;
         }
 
         // GET: api/comment
@@ -56,7 +56,7 @@ namespace Social_Media_API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddComment(CreateCommentDto commentDto)
         {
-            var post = genaricPostRepo.GetById(commentDto.PostId);
+            var post = postRepo.GetById(commentDto.PostId);
             if (post == null)
                 return NotFound("Post not found");
 
@@ -74,8 +74,8 @@ namespace Social_Media_API.Controllers
                 CreatedAt = DateTime.Now
             };
 
-            genaricCommentRepo.Create(comment);
-            genaricCommentRepo.Save();
+            commentRepo.Create(comment);
+            commentRepo.Save();
 
             // 👇 نضيف النوتيفيكيشن لصاحب البوست
             if (post.UserId != userId) // علشان مايبعتش لنفسه
@@ -112,7 +112,7 @@ namespace Social_Media_API.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            var comment = genaricCommentRepo.GetById(id);
+            var comment = commentRepo.GetById(id);
             if (comment == null)
                 return NotFound("Comment not found");
 
@@ -122,8 +122,8 @@ namespace Social_Media_API.Controllers
             comment.Content = commentDto.Content;
             comment.CreatedAt = DateTime.Now;
 
-            genaricCommentRepo.Update(id,comment);
-            genaricCommentRepo.Save();
+            commentRepo.Update(id,comment);
+            commentRepo.Save();
 
             return Ok(new CommentDto
             {
@@ -148,15 +148,15 @@ namespace Social_Media_API.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            var comment = genaricCommentRepo.GetById(id);
+            var comment = commentRepo.GetById(id);
             if (comment == null)
                 return NotFound("Comment not found");
 
             if (comment.UserId != userId)
                 return Forbid("You can only delete your own comment");
 
-            genaricCommentRepo.Delete(id);
-            genaricCommentRepo.Save();
+            commentRepo.Delete(id);
+            commentRepo.Save();
 
             return NoContent();
         }

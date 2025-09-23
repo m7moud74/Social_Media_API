@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+Ôªøusing Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -8,6 +8,7 @@ using Social_Media_API.Model;
 using Social_Media_API.Reposatory;
 using Social_Media_API.Service;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Social_Media_API
 {
@@ -18,7 +19,14 @@ namespace Social_Media_API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                // ŸäÿÆŸÑŸä ÿßŸÑŸÄ enum Ÿäÿ™ÿπÿ±ÿ∂ ŸÉŸÄ string ŸÅŸä JSON responses
+                options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+            });
+           
+
+
             builder.Services.AddEndpointsApiExplorer();
 
             builder.Services.AddSwaggerGen(swagger =>
@@ -36,6 +44,7 @@ namespace Social_Media_API
                         Url = new Uri("https://github.com/Hoda512?tab=repositories")
                     }
                 });
+                swagger.SchemaFilter<EnumSchemaFilter>();
 
                 // Enable JWT authorization in Swagger
                 swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
@@ -61,6 +70,7 @@ namespace Social_Media_API
                         new string[] {}
                     }
                 });
+                swagger.UseInlineDefinitionsForEnums();
             });
 
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -123,7 +133,7 @@ namespace Social_Media_API
                 {
                     OnMessageReceived = context =>
                     {
-                        // «·”„«Õ »ﬁ—«¡… access_token „‰ query string ⁄‰œ « ’«· SignalR
+                        // √á√°√ì√£√á√ç √à√û√ë√á√Å√â access_token √£√§ query string √ö√§√è √á√ä√ï√á√° SignalR
                         var accessToken = context.Request.Query["access_token"];
                         var path = context.HttpContext.Request.Path;
                         if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))

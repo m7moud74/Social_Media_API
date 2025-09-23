@@ -185,7 +185,7 @@ namespace Social_Media_API.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("Social_Media_API.Model.Friendship", b =>
@@ -214,7 +214,7 @@ namespace Social_Media_API.Migrations
                     b.HasIndex("RequesterId", "ReceiverId")
                         .IsUnique();
 
-                    b.ToTable("Friendships", t =>
+                    b.ToTable("Friendships", null, t =>
                         {
                             t.HasCheckConstraint("CK_Friendship_Requester_Receiver", "[RequesterId] <> [ReceiverId]");
                         });
@@ -234,7 +234,7 @@ namespace Social_Media_API.Migrations
                     b.Property<int>("PostId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Raction")
+                    b.Property<int>("Reaction")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
@@ -248,7 +248,7 @@ namespace Social_Media_API.Migrations
                     b.HasIndex("PostId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("Likes");
+                    b.ToTable("Likes", (string)null);
                 });
 
             modelBuilder.Entity("Social_Media_API.Model.Notification", b =>
@@ -279,7 +279,7 @@ namespace Social_Media_API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("Social_Media_API.Model.Post", b =>
@@ -310,7 +310,7 @@ namespace Social_Media_API.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Posts");
+                    b.ToTable("Posts", (string)null);
                 });
 
             modelBuilder.Entity("Social_Media_API.Model.User", b =>

@@ -12,7 +12,7 @@ using Social_Media_API.Data;
 namespace Social_Media_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250922114753_M1")]
+    [Migration("20250923134726_M1")]
     partial class M1
     {
         /// <inheritdoc />
@@ -237,7 +237,7 @@ namespace Social_Media_API.Migrations
                     b.Property<int>("PostId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Raction")
+                    b.Property<int>("Reaction")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
