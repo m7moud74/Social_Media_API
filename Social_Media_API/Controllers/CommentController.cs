@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Social_Media_API.Dto;
 using Social_Media_API.Model;
 using Social_Media_API.Reposatory;
+using Social_Media_API.Service;
 using System.Security.Claims;
 
 namespace Social_Media_API.Controllers
@@ -14,12 +15,14 @@ namespace Social_Media_API.Controllers
         private readonly ICommentRepo commentRepo;
         private readonly IGenaricRepo<Post> genaricPostRepo;
         private readonly IGenaricRepo<Comment> genaricCommentRepo;
+        private readonly INotificationService _notificationService;
 
-        public CommentController(ICommentRepo commentRepo, IGenaricRepo<Post> genaricPostRepo, IGenaricRepo<Comment> genaricCommentRepo)
+        public CommentController(ICommentRepo commentRepo, IGenaricRepo<Post> genaricPostRepo, IGenaricRepo<Comment> genaricCommentRepo, INotificationService notificationService)
         {
             this.commentRepo = commentRepo;
             this.genaricPostRepo = genaricPostRepo;
             this.genaricCommentRepo = genaricCommentRepo;
+            _notificationService = notificationService;
         }
 
         // GET: api/comment
@@ -50,7 +53,8 @@ namespace Social_Media_API.Controllers
 
         // POST: api/comment
         [HttpPost]
-        public IActionResult AddComment(CreateCommentDto commentDto)
+        [HttpPost]
+        public async Task<IActionResult> AddComment(CreateCommentDto commentDto)
         {
             var post = genaricPostRepo.GetById(commentDto.PostId);
             if (post == null)
@@ -59,6 +63,8 @@ namespace Social_Media_API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null)
                 return Unauthorized();
+
+            var userName = User.Identity?.Name;
 
             var comment = new Comment
             {
@@ -71,6 +77,16 @@ namespace Social_Media_API.Controllers
             genaricCommentRepo.Create(comment);
             genaricCommentRepo.Save();
 
+            // 👇 نضيف النوتيفيكيشن لصاحب البوست
+            if (post.UserId != userId) // علشان مايبعتش لنفسه
+            {
+                await _notificationService.NotifyAsync(
+                    post.UserId,
+                    "PostCommented",
+                    $"{userName} commented on your post: {commentDto.Content}"
+                );
+            }
+
             var result = new CommentDto
             {
                 CommentId = comment.CommentId,
@@ -80,7 +96,7 @@ namespace Social_Media_API.Controllers
                 CommentUserDto = new UserDto
                 {
                     UserId = userId,
-                    UserName = User.Identity?.Name,
+                    UserName = userName,
                     ProfilePictureUrl = User.FindFirst("profilePicture")?.Value
                 }
             };

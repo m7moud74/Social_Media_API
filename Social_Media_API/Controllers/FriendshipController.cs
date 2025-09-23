@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Social_Media_API.Dto;
 using Social_Media_API.Model;
 using Social_Media_API.Reposatory;
@@ -11,16 +10,17 @@ namespace Social_Media_API.Controllers
     [ApiController]
     public class FriendshipController : ControllerBase
     {
-
         private readonly IFriendshipRpo _friendshipRepo;
+        private readonly INotificationRepository _notificationRepo;
 
-        public FriendshipController(IFriendshipRpo friendshipRepo)
+        public FriendshipController(IFriendshipRpo friendshipRepo, INotificationRepository notificationRepo)
         {
             _friendshipRepo = friendshipRepo;
+            _notificationRepo = notificationRepo;
         }
 
         [HttpPost("send/{receiverId}")]
-        public IActionResult SendRequest(string receiverId)
+        public async Task<IActionResult> SendRequest(string receiverId)
         {
             var requesterId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (requesterId == null) return Unauthorized();
@@ -36,18 +36,25 @@ namespace Social_Media_API.Controllers
                 RequesterId = requesterId,
                 ReceiverId = receiverId,
                 Status = FriendshipStatus.Pending,
-               
             };
 
             _friendshipRepo.Create(friendship);
             _friendshipRepo.Save();
 
+            var notification = new Notification
+            {
+                UserId = receiverId,
+                Type = "FriendRequest",
+                Message = $"{User.Identity?.Name} sent you a friend request.",
+            };
+            await _notificationRepo.CreateAsync(notification);
+            await _notificationRepo.SaveChangesAsync();
+
             return Ok("Friendship request sent.");
         }
 
-       
         [HttpPost("accept/{id}")]
-        public IActionResult AcceptRequest(int id)
+        public async Task<IActionResult> AcceptRequest(int id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null) return Unauthorized();
@@ -57,15 +64,23 @@ namespace Social_Media_API.Controllers
                 return NotFound();
 
             friendship.Status = FriendshipStatus.Accepted;
-            _friendshipRepo.Update(id,friendship);
+            _friendshipRepo.Update(id, friendship);
             _friendshipRepo.Save();
+
+            var notification = new Notification
+            {
+                UserId = friendship.RequesterId,
+                Type = "FriendRequestAccepted",
+                Message = $"{User.Identity?.Name} accepted your friend request.",
+            };
+            await _notificationRepo.CreateAsync(notification);
+            await _notificationRepo.SaveChangesAsync();
 
             return Ok("Friendship request accepted.");
         }
 
-       
         [HttpPost("reject/{id}")]
-        public IActionResult RejectRequest(int id)
+        public async Task<IActionResult> RejectRequest(int id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null) return Unauthorized();
@@ -75,13 +90,21 @@ namespace Social_Media_API.Controllers
                 return NotFound();
 
             friendship.Status = FriendshipStatus.Rejected;
-            _friendshipRepo.Update(id,friendship);
+            _friendshipRepo.Update(id, friendship);
             _friendshipRepo.Save();
+
+            var notification = new Notification
+            {
+                UserId = friendship.RequesterId,
+                Type = "FriendRequestRejected",
+                Message = $"{User.Identity?.Name} rejected your friend request.",
+            };
+            await _notificationRepo.CreateAsync(notification);
+            await _notificationRepo.SaveChangesAsync();
 
             return Ok("Friendship request rejected.");
         }
 
-       
         [HttpGet("pending")]
         public IActionResult GetPendingRequests()
         {
@@ -103,7 +126,6 @@ namespace Social_Media_API.Controllers
             return Ok(requests);
         }
 
-       
         [HttpGet("friends")]
         public IActionResult GetFriends()
         {
@@ -126,4 +148,3 @@ namespace Social_Media_API.Controllers
         }
     }
 }
-

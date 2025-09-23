@@ -12,8 +12,8 @@ using Social_Media_API.Data;
 namespace Social_Media_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250920222027_M")]
-    partial class M
+    [Migration("20250922114753_M1")]
+    partial class M1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

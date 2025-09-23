@@ -10,7 +10,7 @@ namespace Social_Media_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+  
     public class PostController : ControllerBase
     {
         private readonly IGenaricRepo<Post> _genaricRepo;

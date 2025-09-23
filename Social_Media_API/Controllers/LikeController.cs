@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Social_Media_API.Dto;
 using Social_Media_API.Model;
 using Social_Media_API.Reposatory;
+using Social_Media_API.Service;
 using System.Security.Claims;
 
 namespace Social_Media_API.Controllers
@@ -18,13 +19,15 @@ namespace Social_Media_API.Controllers
         private readonly ILikeRepo likeRepo;
         private readonly IPostRepo postRepo;
         private readonly IGenaricRepo<Post> genaricPostRepo;
+        private readonly INotificationService _notificationService;
 
-        public LikeController(IGenaricRepo<Like> genaricRepo, ILikeRepo likeRepo, IPostRepo postRepo, IGenaricRepo<Post> genaricPostRepo)
+        public LikeController(IGenaricRepo<Like> genaricRepo, ILikeRepo likeRepo, IPostRepo postRepo, IGenaricRepo<Post> genaricPostRepo, INotificationService notificationService)
         {
             this.genaricRepo = genaricRepo;
             this.likeRepo = likeRepo;
             this.postRepo = postRepo;
             this.genaricPostRepo = genaricPostRepo;
+            _notificationService = notificationService;
         }
         [HttpGet]
         public IActionResult GetAllLikes()
@@ -49,42 +52,56 @@ namespace Social_Media_API.Controllers
             return Ok(likes);
         }
         [HttpPost]
-        public IActionResult AddLike(CreateLikeDto likeDto)
+        [HttpPost]
+        public async Task<IActionResult> AddLike(CreateLikeDto likeDto)
         {
             var post = genaricPostRepo.GetById(likeDto.PostId);
             if (post == null)
                 return NotFound("Post not found");
+
             if (likeDto == null) return BadRequest();
+
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null)
-            {
                 return Unauthorized();
-            }
+
             var userName = User.Identity?.Name;
-            var profilePicture = User.FindFirst("profilePicture")?.Value;
+
             var like = new Like
             {
                 PostId = likeDto.PostId,
                 UserId = userId,
-                CreatAt=DateTime.Now,
+                CreatAt = DateTime.Now,
             };
 
             genaricRepo.Create(like);
             genaricRepo.Save();
+
+           
+            if (post.UserId != userId)
+            {
+                await _notificationService.NotifyAsync(
+                    post.UserId,
+                    "PostLiked",
+                    $"{userName} liked your post."
+                );
+            }
+
             var result = new LikeDto
             {
                 PostId = like.PostId,
-                CreateAt=like.CreatAt,
+                CreateAt = like.CreatAt,
                 LikeUserDto = new UserDto
                 {
                     UserId = userId,
-                    UserName = User.Identity?.Name,
+                    UserName = userName,
                     ProfilePictureUrl = User.FindFirst("profilePicture")?.Value
                 }
             };
 
             return CreatedAtAction(nameof(GetAllLikes), new { id = like.LikeId }, result);
         }
+
         [HttpDelete]
         public IActionResult DeleteLike(int id)
         {
