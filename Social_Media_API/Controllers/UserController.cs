@@ -2,8 +2,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Social_Media_API.Dto;
+using Social_Media_API.Dto.Account_DTO;
 using Social_Media_API.Model;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -21,19 +22,30 @@ namespace Social_Media_API.Controllers
         }
 
         [HttpPut]
-        
-        public async Task<IActionResult> Update(UpdateUserDto userDto)
+        //[SwaggerOperation(
+        //    Summary = "Update user profile",
+        //    Description = "Allows the authenticated user to update their profile information, including username, email, profile picture, and password."
+        //)]
+        //[SwaggerResponse(StatusCodes.Status200OK, "User updated successfully.")]
+        //[SwaggerResponse(StatusCodes.Status400BadRequest, "Validation or update failed.")]
+        //[SwaggerResponse(StatusCodes.Status401Unauthorized, "User is not authenticated.")]
+        //[SwaggerResponse(StatusCodes.Status404NotFound, "User not found.")]
+        public async Task<IActionResult> Update([FromForm] UpdateUserDto userDto)
         {
             var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (currentUserId == null)
                 return Unauthorized();
+
             var existingUser = await userManager.FindByIdAsync(currentUserId);
             if (existingUser == null)
                 return NotFound("User not found.");
+
             if (!string.IsNullOrWhiteSpace(userDto.Name))
                 existingUser.UserName = userDto.Name;
+
             if (!string.IsNullOrWhiteSpace(userDto.Email))
                 existingUser.Email = userDto.Email;
+
             if (userDto.ImageUrl != null && userDto.ImageUrl.Length > 0)
             {
                 var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
@@ -49,6 +61,7 @@ namespace Social_Media_API.Controllers
 
                 existingUser.ProfilePictureUrl = $"/images/{fileName}";
             }
+
             if (!string.IsNullOrEmpty(userDto.CurrPassword) && !string.IsNullOrEmpty(userDto.NewPassword))
             {
                 var passwordResult = await userManager.ChangePasswordAsync(
@@ -60,10 +73,10 @@ namespace Social_Media_API.Controllers
                 if (!passwordResult.Succeeded)
                     return BadRequest(passwordResult.Errors);
             }
+
             var updateResult = await userManager.UpdateAsync(existingUser);
             if (!updateResult.Succeeded)
                 return BadRequest(updateResult.Errors);
-
 
             return Ok(new
             {
@@ -72,7 +85,6 @@ namespace Social_Media_API.Controllers
                 existingUser.Email,
                 existingUser.ProfilePictureUrl
             });
-
         }
     }
 }

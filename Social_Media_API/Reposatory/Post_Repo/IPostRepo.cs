@@ -1,0 +1,10 @@
+﻿using Social_Media_API.Model;
+using Social_Media_API.Reposatory.Genric_Repo;
+
+namespace Social_Media_API.Reposatory.Post_Repo
+{
+    public interface IPostRepo:IGenaricRepo<Post>
+    {
+        public IEnumerable<Post> GetWithIncludes();
+    }
+}

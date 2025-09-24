@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Social_Media_API.Dto;
+using Social_Media_API.Dto.FriendShip_DTO;
 using Social_Media_API.Model;
-using Social_Media_API.Reposatory;
+using Social_Media_API.Reposatory.FriendShip_Repo;
+using Social_Media_API.Reposatory.Notify_Repo;
 using System.Security.Claims;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Social_Media_API.Controllers
 {
@@ -20,6 +23,10 @@ namespace Social_Media_API.Controllers
         }
 
         [HttpPost("send/{receiverId}")]
+        //[SwaggerOperation(Summary = "Send a friendship request", Description = "Allows a user to send a friendship request to another user.")]
+        //[SwaggerResponse(200, "Friendship request sent.")]
+        //[SwaggerResponse(400, "Invalid request.")]
+        //[SwaggerResponse(401, "Unauthorized.")]
         public async Task<IActionResult> SendRequest(string receiverId)
         {
             var requesterId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -45,7 +52,7 @@ namespace Social_Media_API.Controllers
             {
                 UserId = receiverId,
                 Type = "FriendRequest",
-                Message = $"{User.Identity?.Name} sent you a friend request.",
+                Message = $"{User.Identity?.Name} sent you a friend request."
             };
             await _notificationRepo.CreateAsync(notification);
             await _notificationRepo.SaveChangesAsync();
@@ -54,6 +61,10 @@ namespace Social_Media_API.Controllers
         }
 
         [HttpPost("accept/{id}")]
+        //[SwaggerOperation(Summary = "Accept a friendship request", Description = "Allows a user to accept a friendship request.")]
+        //[SwaggerResponse(200, "Friendship request accepted.")]
+        //[SwaggerResponse(401, "Unauthorized.")]
+        //[SwaggerResponse(404, "Friendship request not found.")]
         public async Task<IActionResult> AcceptRequest(int id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -71,7 +82,7 @@ namespace Social_Media_API.Controllers
             {
                 UserId = friendship.RequesterId,
                 Type = "FriendRequestAccepted",
-                Message = $"{User.Identity?.Name} accepted your friend request.",
+                Message = $"{User.Identity?.Name} accepted your friend request."
             };
             await _notificationRepo.CreateAsync(notification);
             await _notificationRepo.SaveChangesAsync();
@@ -80,6 +91,10 @@ namespace Social_Media_API.Controllers
         }
 
         [HttpPost("reject/{id}")]
+        //[SwaggerOperation(Summary = "Reject a friendship request", Description = "Allows a user to reject a friendship request.")]
+        //[SwaggerResponse(200, "Friendship request rejected.")]
+        //[SwaggerResponse(401, "Unauthorized.")]
+        //[SwaggerResponse(404, "Friendship request not found.")]
         public async Task<IActionResult> RejectRequest(int id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -97,7 +112,7 @@ namespace Social_Media_API.Controllers
             {
                 UserId = friendship.RequesterId,
                 Type = "FriendRequestRejected",
-                Message = $"{User.Identity?.Name} rejected your friend request.",
+                Message = $"{User.Identity?.Name} rejected your friend request."
             };
             await _notificationRepo.CreateAsync(notification);
             await _notificationRepo.SaveChangesAsync();
@@ -106,6 +121,9 @@ namespace Social_Media_API.Controllers
         }
 
         [HttpGet("pending")]
+        //[SwaggerOperation(Summary = "Get pending friendship requests", Description = "Fetches all pending friendship requests for the current user.")]
+        //[SwaggerResponse(200, "List of pending requests.")]
+        //[SwaggerResponse(401, "Unauthorized.")]
         public IActionResult GetPendingRequests()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -127,6 +145,9 @@ namespace Social_Media_API.Controllers
         }
 
         [HttpGet("friends")]
+        //[SwaggerOperation(Summary = "Get list of friends", Description = "Fetches all accepted friendships for the current user.")]
+        //[SwaggerResponse(200, "List of friends.")]
+        //[SwaggerResponse(401, "Unauthorized.")]
         public IActionResult GetFriends()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

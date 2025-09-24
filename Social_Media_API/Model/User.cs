@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Social_Media_API.Dto;
+using Social_Media_API.Dto.Account_DTO;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace Social_Media_API.Model
 {

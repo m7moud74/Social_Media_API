@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Social_Media_API.Dto;
+using Social_Media_API.Dto.Account_DTO;
+using Social_Media_API.Dto.Like_DTO;
 using Social_Media_API.Model;
-using Social_Media_API.Reposatory;
-using Social_Media_API.Service;
+using Social_Media_API.Reposatory.Like_Repo;
+using Social_Media_API.Reposatory.Post_Repo;
+using Social_Media_API.Service.Notify_Service;
 using System.Security.Claims;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Social_Media_API.Controllers
 {
@@ -19,15 +20,17 @@ namespace Social_Media_API.Controllers
         private readonly IPostRepo postRepo;
         private readonly INotificationService _notificationService;
 
-        public LikeController( ILikeRepo likeRepo, IPostRepo postRepo, INotificationService notificationService)
+        public LikeController(ILikeRepo likeRepo, IPostRepo postRepo, INotificationService notificationService)
         {
-           
             this.likeRepo = likeRepo;
             this.postRepo = postRepo;
-           
             _notificationService = notificationService;
         }
+
         [HttpGet]
+        //[SwaggerOperation(Summary = "Get all likes", Description = "Fetches all likes with related user and post info.")]
+        //[SwaggerResponse(200, "List of likes returned successfully.")]
+        //[SwaggerResponse(204, "No likes found.")]
         public IActionResult GetAllLikes()
         {
             var allLikes = likeRepo.GetWithIncludes();
@@ -35,9 +38,8 @@ namespace Social_Media_API.Controllers
             var likes = allLikes.Select(like => new LikeDto
             {
                 PostId = like.PostId,
-                CreateAt=like.CreatAt,
-                Reaction=like.Reaction,
-
+                CreateAt = like.CreatAt,
+                Reaction = like.Reaction,
                 LikeUserDto = new UserDto
                 {
                     UserId = like.UserId,
@@ -51,8 +53,13 @@ namespace Social_Media_API.Controllers
 
             return Ok(likes);
         }
+
         [HttpPost]
-        [HttpPost]
+        //[SwaggerOperation(Summary = "Add a like to a post", Description = "Allows an authenticated user to like a specific post.")]
+        //[SwaggerResponse(201, "Like created successfully.")]
+        //[SwaggerResponse(400, "Invalid like data.")]
+        //[SwaggerResponse(401, "Unauthorized.")]
+        //[SwaggerResponse(404, "Post not found.")]
         public async Task<IActionResult> AddLike(CreateLikeDto likeDto)
         {
             var post = postRepo.GetById(likeDto.PostId);
@@ -71,20 +78,19 @@ namespace Social_Media_API.Controllers
             {
                 PostId = likeDto.PostId,
                 UserId = userId,
-                Reaction=likeDto.Reaction,
-                CreatAt = DateTime.Now,
+                Reaction = likeDto.Reaction,
+                CreatAt = DateTime.Now
             };
 
             likeRepo.Create(like);
             likeRepo.Save();
 
-           
             if (post.UserId != userId)
             {
                 await _notificationService.NotifyAsync(
                     post.UserId,
                     "PostLiked",
-                    $"{userName} liked your post with React{like.Reaction}."
+                    $"{userName} liked your post with React {like.Reaction}."
                 );
             }
 
@@ -92,7 +98,7 @@ namespace Social_Media_API.Controllers
             {
                 PostId = like.PostId,
                 CreateAt = like.CreatAt,
-                Reaction=likeDto.Reaction,
+                Reaction = likeDto.Reaction,
                 LikeUserDto = new UserDto
                 {
                     UserId = userId,
@@ -104,7 +110,12 @@ namespace Social_Media_API.Controllers
             return CreatedAtAction(nameof(GetAllLikes), new { id = like.LikeId }, result);
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
+        //[SwaggerOperation(Summary = "Delete a like", Description = "Allows an authenticated user to remove their like from a post.")]
+        //[SwaggerResponse(204, "Like deleted successfully.")]
+        //[SwaggerResponse(401, "Unauthorized.")]
+        //[SwaggerResponse(403, "User not allowed to delete this like.")]
+        //[SwaggerResponse(404, "Like not found.")]
         public IActionResult DeleteLike(int id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -125,4 +136,3 @@ namespace Social_Media_API.Controllers
         }
     }
 }
-
