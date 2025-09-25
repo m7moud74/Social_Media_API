@@ -5,14 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Social_Media_API.Data;
 using Social_Media_API.Model;
-using Social_Media_API.Reposatory.Comment_Repo;
-using Social_Media_API.Reposatory.FriendShip_Repo;
-using Social_Media_API.Reposatory.Genric_Repo;
-using Social_Media_API.Reposatory.Like_Repo;
-using Social_Media_API.Reposatory.Notify_Repo;
-using Social_Media_API.Reposatory.Post_Repo;
+using Social_Media_API.Reposatory;
 using Social_Media_API.Service;
-using Social_Media_API.Service.Notify_Service;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -27,7 +21,7 @@ namespace Social_Media_API
             // Add services to the container.
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
-            
+                // يخلي الـ enum يتعرض كـ string في JSON responses
                 options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
             });
            
@@ -35,15 +29,13 @@ namespace Social_Media_API
 
             builder.Services.AddEndpointsApiExplorer();
 
-          
-
             builder.Services.AddSwaggerGen(swagger =>
             {
                 swagger.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
-                    Title = "Social Media API",
-                    Description = "API To Manage Social Media",
+                    Title = "Shop API",
+                    Description = "API To Manage Shop of T-shirts",
                     TermsOfService = new Uri("http://tempuri.org/terms"),
                     Contact = new OpenApiContact
                     {
@@ -52,37 +44,34 @@ namespace Social_Media_API
                         Url = new Uri("https://github.com/Hoda512?tab=repositories")
                     }
                 });
-
                 swagger.SchemaFilter<EnumSchemaFilter>();
 
-                swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                // Enable JWT authorization in Swagger
+                swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
                     Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "bearer",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
                     Description = "Enter 'Bearer' [space] and then your valid token below.\r\n\r\nExample: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\"",
                 });
-
                 swagger.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
                 {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
-
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
                 swagger.UseInlineDefinitionsForEnums();
             });
-
 
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
