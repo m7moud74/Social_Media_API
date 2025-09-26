@@ -14,7 +14,13 @@ namespace Social_Media_API.Reposatory
         }
         public IEnumerable<Post> GetWithIncludes()
         {
-            return con.Posts.Include(u => u.User).Include(c => c.Comments).Include(L => L.Likes).ToList();
+            return con.Posts
+        .Include(p => p.User)
+        .Include(p => p.Comments)
+            .ThenInclude(c => c.User)
+        .Include(p => p.Likes)
+            .ThenInclude(l => l.User)
+        .ToList();
         }
     }
 }

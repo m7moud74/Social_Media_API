@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Social_Media_API.Model
 {
@@ -7,9 +8,8 @@ namespace Social_Media_API.Model
     {
         [Key]
         public int PostId { get; set; }
-        [Required]
-
-        public string Content { get; set; }
+        [AllowNull]
+        public string? Content { get; set; }
         public DateTime CreatedAt { get; set; }
         public string? ImageUrl { get; set; }
 
@@ -25,3 +25,4 @@ namespace Social_Media_API.Model
 
     }
 }
+

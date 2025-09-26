@@ -59,9 +59,13 @@ namespace Social_Media_API.Controllers
                         await registerDTO.ProfilePicture.CopyToAsync(stream);
                     }
 
-                    user.ProfilePictureUrl = "/Images/" + fileName; 
+                    user.ProfilePictureUrl = "/Images/" + fileName;
                 }
-                var result = await _userManager.CreateAsync(user, registerDTO.Password);
+                else {
+
+                    user.ProfilePictureUrl = "/Images/" + "";
+                }
+                    var result = await _userManager.CreateAsync(user, registerDTO.Password);
                 if (result.Succeeded)
                 { 
                     

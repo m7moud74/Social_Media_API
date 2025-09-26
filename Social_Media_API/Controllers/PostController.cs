@@ -22,6 +22,9 @@ namespace Social_Media_API.Controllers
         }
 
         [HttpGet]
+        //[SwaggerOperation(Summary = "Get all posts", Description = "Retrieves all posts including user, comments, and likes.")]
+        //[SwaggerResponse(StatusCodes.Status200OK, "List of posts retrieved successfully.")]
+        //[SwaggerResponse(StatusCodes.Status401Unauthorized, "User not authorized.")]
         public IActionResult GetAllPosts()
         {
             var postsContent = _postRepo.GetWithIncludes();
@@ -35,7 +38,7 @@ namespace Social_Media_API.Controllers
                 {
                     UserId = post.User.Id,
                     UserName = post.User.UserName,
-                    ProfilePictureUrl=post.User.ProfilePictureUrl
+                    ProfilePictureUrl = post.User.ProfilePictureUrl
                 },
                 Comments = post.Comments.Select(c => new CommentDto
                 {
@@ -47,15 +50,60 @@ namespace Social_Media_API.Controllers
                     {
                         UserId = c.User.Id,
                         UserName = c.User.UserName,
-                        ProfilePictureUrl=c.User.ProfilePictureUrl
-                        
+                        ProfilePictureUrl = c.User.ProfilePictureUrl
                     }
                 }).ToList(),
                 Likes = post.Likes.Select(l => new LikeDto
                 {
                     PostId = l.PostId,
                     CreateAt = l.CreatAt,
-                    Reaction=l.Reaction,
+                    Reaction = l.Reaction,
+                    LikeUserDto = new UserDto
+                    {
+                        UserId = l.User.Id,
+                        UserName = l.User.UserName,
+                        ProfilePictureUrl = l.User.ProfilePictureUrl
+                    }
+                }).ToList()
+            }).ToList();
+
+            return Ok(posts);
+        }
+        [HttpGet("yourProfile")]
+        public IActionResult GetAllPostyouPublish()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var postsContent = _postRepo.GetWithIncludes().Where(c => c.User.Id == userId);
+            var posts = postsContent.Select(post => new PostDto
+            {
+                PostId = post.PostId,
+                Content = post.Content,
+                CreatedAt = post.CreatedAt,
+                ImageUrl = post.ImageUrl,
+                PostUserDto = new UserDto
+                {
+                    UserId = post.User.Id,
+                    UserName = post.User.UserName,
+                    ProfilePictureUrl = post.User.ProfilePictureUrl
+                },
+                Comments = post.Comments.Select(c => new CommentDto
+                {
+                    CommentId = c.CommentId,
+                    PostId = c.PostId,
+                    Content = c.Content,
+                    CreatedAt = c.CreatedAt,
+                    CommentUserDto = new UserDto
+                    {
+                        UserId = c.User.Id,
+                        UserName = c.User.UserName,
+                        ProfilePictureUrl = c.User.ProfilePictureUrl
+                    }
+                }).ToList(),
+                Likes = post.Likes.Select(l => new LikeDto
+                {
+                    PostId = l.PostId,
+                    CreateAt = l.CreatAt,
+                    Reaction = l.Reaction,
                     LikeUserDto = new UserDto
                     {
                         UserId = l.User.Id,
@@ -69,6 +117,10 @@ namespace Social_Media_API.Controllers
         }
 
         [HttpPost("create")]
+        //[SwaggerOperation(Summary = "Create a post", Description = "Creates a new post with optional image.")]
+        //[SwaggerResponse(StatusCodes.Status201Created, "Post created successfully.")]
+        //[SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid post data.")]
+        //[SwaggerResponse(StatusCodes.Status401Unauthorized, "User not authorized.")]
         public async Task<IActionResult> CreatePost([FromForm] CreatePostDto postDto)
         {
             if (postDto == null)
@@ -137,6 +189,11 @@ namespace Social_Media_API.Controllers
         }
 
         [HttpPut("{id}")]
+        //[SwaggerOperation(Summary = "Update a post", Description = "Updates the content and/or image of an existing post.")]
+        //[SwaggerResponse(StatusCodes.Status200OK, "Post updated successfully.")]
+        //[SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid post data.")]
+        //[SwaggerResponse(StatusCodes.Status401Unauthorized, "User not authorized.")]
+        //[SwaggerResponse(StatusCodes.Status404NotFound, "Post not found.")]
         public async Task<IActionResult> Update(int id, [FromForm] CreatePostDto postDto)
         {
             var existingPost = _postRepo.GetById(id);
@@ -169,11 +226,23 @@ namespace Social_Media_API.Controllers
         }
 
         [HttpDelete("{id}")]
+        //[SwaggerOperation(Summary = "Delete a post", Description = "Deletes a post by its ID.")]
+        //[SwaggerResponse(StatusCodes.Status204NoContent, "Post deleted successfully.")]
+        //[SwaggerResponse(StatusCodes.Status401Unauthorized, "User not authorized.")]
+        //[SwaggerResponse(StatusCodes.Status404NotFound, "Post not found.")]
         public IActionResult Delete(int id)
         {
             var existingPost = _postRepo.GetById(id);
             if (existingPost == null)
                 return NotFound("Post not found.");
+            if (!string.IsNullOrEmpty(existingPost.ImageUrl))
+            {
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", existingPost.ImageUrl.TrimStart('/'));
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+            }
 
             _postRepo.Delete(id);
             _postRepo.Save();

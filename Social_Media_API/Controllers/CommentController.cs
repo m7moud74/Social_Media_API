@@ -13,23 +13,29 @@ namespace Social_Media_API.Controllers
     public class CommentController : ControllerBase
     {
         private readonly ICommentRepo commentRepo;
-        private readonly IGenaricRepo<Post> genaricPostRepo;
-       
         private readonly INotificationService _notificationService;
         private readonly IPostRepo postRepo;
 
-        public CommentController(ICommentRepo commentRepo, INotificationService notificationService,IPostRepo postRepo)
+        public CommentController(ICommentRepo commentRepo, INotificationService notificationService, IPostRepo postRepo)
         {
-            this.commentRepo = commentRepo;           
+            this.commentRepo = commentRepo;
             _notificationService = notificationService;
             this.postRepo = postRepo;
         }
 
-        // GET: api/comment
+
         [HttpGet]
-        public IActionResult GetAllComments()
+        //[SwaggerOperation(
+        //    Summary = "Get all comments",
+        //    Description = "Retrieves all comments with user and post info."
+        //)]
+        //[SwaggerResponse(200, "Comments retrieved successfully", typeof(IEnumerable<CommentDto>))]
+       
+        public IActionResult GetAllComments(int podtid)
         {
-            var allComments = commentRepo.GetWithInclude();
+            if (podtid == null)
+                return BadRequest("Not found ");
+            var allComments = commentRepo.GetWithInclude().Where(c => c.PostId == podtid);
 
             var comments = allComments.Select(comment => new CommentDto
             {
@@ -51,9 +57,15 @@ namespace Social_Media_API.Controllers
             return Ok(comments);
         }
 
-        // POST: api/comment
+
         [HttpPost]
-        [HttpPost]
+        //[SwaggerOperation(
+        //    Summary = "Add a new comment",
+        //    Description = "Creates a new comment on a specific post and notifies the post owner."
+        //)]
+        //[SwaggerResponse(201, "Comment created successfully", typeof(CommentDto))]
+        //[SwaggerResponse(401, "Unauthorized")]
+        //[SwaggerResponse(404, "Post not found")]
         public async Task<IActionResult> AddComment(CreateCommentDto commentDto)
         {
             var post = postRepo.GetById(commentDto.PostId);
@@ -77,8 +89,7 @@ namespace Social_Media_API.Controllers
             commentRepo.Create(comment);
             commentRepo.Save();
 
-            // 👇 نضيف النوتيفيكيشن لصاحب البوست
-            if (post.UserId != userId) // علشان مايبعتش لنفسه
+            if (post.UserId != userId)
             {
                 await _notificationService.NotifyAsync(
                     post.UserId,
@@ -104,8 +115,16 @@ namespace Social_Media_API.Controllers
             return CreatedAtAction(nameof(GetAllComments), new { id = comment.CommentId }, result);
         }
 
-        // PUT: api/comment/5
+
         [HttpPut("{id}")]
+        //[SwaggerOperation(
+        //    Summary = "Update a comment",
+        //    Description = "Allows the user to update their own comment."
+        //)]
+        //[SwaggerResponse(200, "Comment updated successfully", typeof(CommentDto))]
+        //[SwaggerResponse(401, "Unauthorized")]
+        //[SwaggerResponse(403, "User cannot update another user's comment")]
+        //[SwaggerResponse(404, "Comment not found")]
         public IActionResult UpdateComment(int id, CreateCommentDto commentDto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -122,7 +141,7 @@ namespace Social_Media_API.Controllers
             comment.Content = commentDto.Content;
             comment.CreatedAt = DateTime.Now;
 
-            commentRepo.Update(id,comment);
+            commentRepo.Update(id, comment);
             commentRepo.Save();
 
             return Ok(new CommentDto
@@ -140,8 +159,16 @@ namespace Social_Media_API.Controllers
             });
         }
 
-        // DELETE: api/comment/5
+
         [HttpDelete("{id}")]
+        //[SwaggerOperation(
+        //    Summary = "Delete a comment",
+        //    Description = "Allows the user to delete their own comment."
+        //)]
+        //[SwaggerResponse(204, "Comment deleted successfully")]
+        //[SwaggerResponse(401, "Unauthorized")]
+        //[SwaggerResponse(403, "User cannot delete another user's comment")]
+        //[SwaggerResponse(404, "Comment not found")]
         public IActionResult DeleteComment(int id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -162,3 +189,4 @@ namespace Social_Media_API.Controllers
         }
     }
 }
+
