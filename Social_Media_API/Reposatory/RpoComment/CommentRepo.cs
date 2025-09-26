@@ -2,7 +2,7 @@
 using Social_Media_API.Data;
 using Social_Media_API.Model;
 
-namespace Social_Media_API.Reposatory
+namespace Social_Media_API.Reposatory.RpoComment
 {
     public class CommentRepo : GenaricRepo<Comment>, ICommentRepo
     {

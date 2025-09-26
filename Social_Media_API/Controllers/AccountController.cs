@@ -1,13 +1,14 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Social_Media_API.Dto;
 using Social_Media_API.Model;
+using Social_Media_API.Service;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Social_Media_API.Service;
-using Social_Media_API.Dto;
 namespace Social_Media_API.Controllers
 {
     [Route("api/[controller]")]
@@ -114,6 +115,7 @@ namespace Social_Media_API.Controllers
             }
         }
         [HttpDelete]
+        [Authorize]
         public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountDTO deleteAccountDTO)
         {
             try

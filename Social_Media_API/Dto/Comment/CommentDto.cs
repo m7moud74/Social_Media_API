@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Social_Media_API.Dto.Acoount;
+using System.ComponentModel.DataAnnotations;
 
-namespace Social_Media_API.Dto
+namespace Social_Media_API.Dto.Comment
 {
     public class CommentDto
     {

@@ -2,7 +2,7 @@
 using Social_Media_API.Data;
 using Social_Media_API.Model;
 
-namespace Social_Media_API.Reposatory
+namespace Social_Media_API.Reposatory.RpoFriensip
 {
     public class FriendshipRpo:GenaricRepo<Friendship>,IFriendshipRpo
     {
@@ -16,8 +16,8 @@ namespace Social_Media_API.Reposatory
         public bool Exists(string requesterId, string receiverId)
         {
             return _context.Friendships.Any(f =>
-                (f.RequesterId == requesterId && f.ReceiverId == receiverId) ||
-                (f.RequesterId == receiverId && f.ReceiverId == requesterId));
+                f.RequesterId == requesterId && f.ReceiverId == receiverId ||
+                f.RequesterId == receiverId && f.ReceiverId == requesterId);
         }
 
         public IEnumerable<Friendship> GetPendingRequests(string userId)

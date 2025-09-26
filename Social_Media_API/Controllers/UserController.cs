@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Social_Media_API.Dto;
+using Social_Media_API.Dto.Account;
 using Social_Media_API.Model;
 using System.Security.Claims;
 using System.Threading.Tasks;

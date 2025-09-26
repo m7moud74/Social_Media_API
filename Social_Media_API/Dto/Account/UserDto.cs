@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Social_Media_API.Dto
+namespace Social_Media_API.Dto.Acoount
 {
     public class UserDto
     {

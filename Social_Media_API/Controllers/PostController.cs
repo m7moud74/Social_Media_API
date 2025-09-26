@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Social_Media_API.Dto;
 using Social_Media_API.Model;
-using Social_Media_API.Reposatory;
+using Social_Media_API.Reposatory.PostRepo;
 using Social_Media_API.Service;
 using System.Security.Claims;
 
@@ -10,6 +10,7 @@ namespace Social_Media_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PostController : ControllerBase
     {
         private readonly IPostRepo _postRepo;

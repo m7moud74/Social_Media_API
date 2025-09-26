@@ -6,6 +6,10 @@ using Microsoft.OpenApi.Models;
 using Social_Media_API.Data;
 using Social_Media_API.Model;
 using Social_Media_API.Reposatory;
+using Social_Media_API.Reposatory.PostRepo;
+using Social_Media_API.Reposatory.RepoLike;
+using Social_Media_API.Reposatory.RpoComment;
+using Social_Media_API.Reposatory.RpoFriensip;
 using Social_Media_API.Service;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -34,14 +38,14 @@ namespace Social_Media_API
                 swagger.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
-                    Title = "Shop API",
-                    Description = "API To Manage Shop of T-shirts",
+                    Title = "Social Media Api",
+                    Description = "API To Manage Social Media",
                     TermsOfService = new Uri("http://tempuri.org/terms"),
                     Contact = new OpenApiContact
                     {
-                        Name = "Mahmoud Diab And Elnabasy",
-                        Email = "FaceBook@gmail.com",
-                        Url = new Uri("https://github.com/Hoda512?tab=repositories")
+                        Name = "Mahmoud Diab And Mahmoud Mostafa",
+                        Email = "mhmmoud289@gmail.com",
+                        Url = new Uri("https://github.com/m7moud74")
                     }
                 });
                 swagger.SchemaFilter<EnumSchemaFilter>();

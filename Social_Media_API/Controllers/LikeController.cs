@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Social_Media_API.Dto;
 using Social_Media_API.Model;
-using Social_Media_API.Reposatory;
+using Social_Media_API.Reposatory.PostRepo;
+using Social_Media_API.Reposatory.RepoLike;
 using Social_Media_API.Service;
 using System.Security.Claims;
 

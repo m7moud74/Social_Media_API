@@ -1,6 +1,6 @@
 ﻿using Social_Media_API.Model;
 
-namespace Social_Media_API.Reposatory
+namespace Social_Media_API.Reposatory.RpoFriensip
 {
     public interface IFriendshipRpo:IGenaricRepo<Friendship>
     {

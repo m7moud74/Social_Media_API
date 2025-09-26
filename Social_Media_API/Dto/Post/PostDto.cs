@@ -1,4 +1,8 @@
-﻿namespace Social_Media_API.Dto
+﻿using Social_Media_API.Dto.Acoount;
+using Social_Media_API.Dto.Comment;
+using Social_Media_API.Dto.Like;
+
+namespace Social_Media_API.Dto.Post
 {
     public class PostDto
     {

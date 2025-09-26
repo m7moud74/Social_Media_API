@@ -1,4 +1,6 @@
-﻿namespace Social_Media_API.Dto
+﻿using Social_Media_API.Dto.Acoount;
+
+namespace Social_Media_API.Dto.Post
 {
     public class PostReadDto
     {

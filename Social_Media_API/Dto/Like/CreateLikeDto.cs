@@ -1,6 +1,6 @@
 ﻿using Social_Media_API.Model;
 
-namespace Social_Media_API.Dto
+namespace Social_Media_API.Dto.Like
 {
     public class CreateLikeDto
     {

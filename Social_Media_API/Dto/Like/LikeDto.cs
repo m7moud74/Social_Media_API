@@ -1,7 +1,8 @@
-﻿using Social_Media_API.Model;
+﻿using Social_Media_API.Dto.Acoount;
+using Social_Media_API.Model;
 using System.Text.Json.Serialization;
 
-namespace Social_Media_API.Dto
+namespace Social_Media_API.Dto.Like
 {
     public class LikeDto
     {

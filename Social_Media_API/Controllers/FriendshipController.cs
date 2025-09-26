@@ -1,13 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Social_Media_API.Dto;
 using Social_Media_API.Model;
 using Social_Media_API.Reposatory;
+using Social_Media_API.Reposatory.RpoFriensip;
 using System.Security.Claims;
 
 namespace Social_Media_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class FriendshipController : ControllerBase
     {
         private readonly IFriendshipRpo _friendshipRepo;

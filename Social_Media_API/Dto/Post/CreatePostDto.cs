@@ -1,4 +1,4 @@
-﻿namespace Social_Media_API.Dto
+﻿namespace Social_Media_API.Dto.Post
 {
     public class CreatePostDto
     {
