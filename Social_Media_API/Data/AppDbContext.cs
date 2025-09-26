@@ -43,7 +43,7 @@ namespace Social_Media_API.Data
 
             builder.Entity<Friendship>()
                 .HasCheckConstraint("CK_Friendship_Requester_Receiver", "[RequesterId] <> [ReceiverId]");
-            builder.Entity<Friendship>().Property(l=>l.Status).HasConversion<string>();
+            
             builder.Entity<Friendship>()
                 .HasOne(f => f.Requester)    
                 .WithMany(u => u.FriendRequestsSent)   
